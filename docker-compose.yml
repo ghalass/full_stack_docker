@@ -1,0 +1,59 @@
+services:
+  #🗄️ Service MySQL Database
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: 12345678
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "myuser", "-p12345678"]
+      interval: 5s
+      retries: 10
+
+  # 🖥️ Service Backend
+  backend_app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: backend_image
+    container_name: backend_app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    depends_on:
+      - mysql_db
+
+  # 🌐 Service frontend
+  frontend_app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: frontend_image
+    container_name: frontend_app
+    restart: unless-stopped
+    ports:
+      - "4001:4001" # Port local:container
+    volumes:
+      - ./frontend:/app # Monte le code local
+      - /app/node_modules # Empêche les conflits node_modules host/container
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Nécessaire pour le hot reload dans Docker
+    command: npm run dev -- --host # Permet d’accéder depuis l’extérieur du conteneur
+    depends_on:
+      - backend_app
+
+volumes:
+  mysql_data:

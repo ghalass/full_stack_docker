@@ -1,0 +1,13 @@
+@baseUrl =http://localhost:3001
+
+### GET ALL USERS
+GET {{baseUrl}}/users
+
+### CREATE A USER
+POST {{baseUrl}}/users/create
+Content-Type: application/json
+
+{
+    "name":"med",
+    "age": 18
+}
