@@ -41,6 +41,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: dev # changer en "prod" pour production
     image: frontend_image
     container_name: frontend_app
     restart: unless-stopped
